@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { withContainer } from '@/lib/with-container';
 
-export async function GET() {
+async function getHandler(request: NextRequest, { prisma }: { prisma: any }) {
   try {
     const buckets = await prisma.bucket.findMany({
       include: {
@@ -20,7 +20,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, { prisma }: { prisma: any }) {
   try {
     const body = await request.json();
     const { name, size, period } = body;
@@ -55,3 +55,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = withContainer(getHandler);
+export const POST = withContainer(postHandler);

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { withContainerAndParams } from '@/lib/with-container';
 
-export async function PUT(
+async function putHandler(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
+  { prisma }: { prisma: any }
 ) {
   try {
     const { id } = await params;
@@ -25,3 +26,5 @@ export async function PUT(
     );
   }
 }
+
+export const PUT = withContainerAndParams(putHandler);

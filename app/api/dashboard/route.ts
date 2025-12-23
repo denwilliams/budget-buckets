@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { withContainer } from '@/lib/with-container';
 
-export async function GET() {
+async function getHandler(request: NextRequest, { prisma }: { prisma: any }) {
   try {
     const buckets = await prisma.bucket.findMany({
       include: {
@@ -13,7 +13,7 @@ export async function GET() {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    const dashboardData = buckets.map((bucket) => {
+    const dashboardData = buckets.map((bucket: any) => {
       const startOfPeriod =
         bucket.period === 'monthly'
           ? new Date(currentYear, currentMonth, 1)
@@ -24,13 +24,13 @@ export async function GET() {
           ? new Date(currentYear, currentMonth + 1, 0)
           : new Date(currentYear, 11, 31);
 
-      const periodTransactions = bucket.transactions.filter((t) => {
+      const periodTransactions = bucket.transactions.filter((t: any) => {
         const transactionDate = new Date(t.date);
         return transactionDate >= startOfPeriod && transactionDate <= endOfPeriod;
       });
 
       const totalSpent = periodTransactions.reduce(
-        (sum, t) => sum + t.amount,
+        (sum: number, t: any) => sum + t.amount,
         0
       );
 
@@ -74,3 +74,5 @@ export async function GET() {
     );
   }
 }
+
+export const GET = withContainer(getHandler);

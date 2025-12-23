@@ -18,6 +18,7 @@ A budget planning application that allows you to organize your expenses into buc
 
 - Node.js 18+
 - npm or yarn
+- PostgreSQL 14+
 
 ### Installation
 
@@ -27,17 +28,22 @@ A budget planning application that allows you to organize your expenses into buc
    npm install
    ```
 
-3. Set up the database:
+3. Configure your database connection in `.env`:
+   ```
+   DATABASE_URL="postgresql://user:password@localhost:5432/budget_buckets?schema=public"
+   ```
+
+4. Set up the database:
    ```bash
    npx prisma migrate dev
    ```
 
-4. Run the development server:
+5. Run the development server:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Usage
 
@@ -65,8 +71,9 @@ Date,Description,Amount
 
 - **Frontend**: Next.js 16, React 19, TypeScript
 - **Styling**: Tailwind CSS
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Prisma ORM
 - **CSV Parsing**: PapaParse
+- **Architecture**: Dependency Injection pattern for database access
 
 ## License
 

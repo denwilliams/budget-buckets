@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+import { withContainer } from '@/lib/with-container';
 
-export async function GET() {
+async function getHandler(request: NextRequest, { prisma }: { prisma: any }) {
   try {
     const transactions = await prisma.transaction.findMany({
       include: {
@@ -19,3 +19,5 @@ export async function GET() {
     );
   }
 }
+
+export const GET = withContainer(getHandler);

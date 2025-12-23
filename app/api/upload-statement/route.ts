@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { withContainer } from '@/lib/with-container';
 import Papa from 'papaparse';
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, { prisma }: { prisma: any }) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -67,3 +67,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withContainer(postHandler);
