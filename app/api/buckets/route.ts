@@ -1,58 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withContainer } from '@/lib/with-container';
+import { Container } from '@/lib/container';
+import { createBucketSchema } from '@/lib/validation';
+import { handleError } from '@/lib/error-handler';
 
-async function getHandler(request: NextRequest, { prisma }: { prisma: any }) {
+async function getHandler(
+  request: NextRequest,
+  { bucketService }: Container
+): Promise<NextResponse> {
   try {
-    const buckets = await prisma.bucket.findMany({
-      include: {
-        transactions: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const buckets = await bucketService.getAllBuckets();
     return NextResponse.json(buckets);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch buckets' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
-async function postHandler(request: NextRequest, { prisma }: { prisma: any }) {
+async function postHandler(
+  request: NextRequest,
+  { bucketService }: Container
+): Promise<NextResponse> {
   try {
     const body = await request.json();
-    const { name, size, period } = body;
-
-    if (!name || !size || !period) {
-      return NextResponse.json(
-        { error: 'Name, size, and period are required' },
-        { status: 400 }
-      );
-    }
-
-    if (period !== 'monthly' && period !== 'yearly') {
-      return NextResponse.json(
-        { error: 'Period must be either "monthly" or "yearly"' },
-        { status: 400 }
-      );
-    }
-
-    const bucket = await prisma.bucket.create({
-      data: {
-        name,
-        size: parseFloat(size),
-        period,
-      },
-    });
-
+    const validatedData = createBucketSchema.parse(body);
+    const bucket = await bucketService.createBucket(validatedData);
     return NextResponse.json(bucket, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create bucket' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
