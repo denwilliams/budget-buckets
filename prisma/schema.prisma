@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bucket {
+  id           String        @id @default(uuid())
+  name         String
+  size         Float
+  period       String        // "monthly" or "yearly"
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  date        DateTime
+  description String
+  amount      Float
+  bucketId    String?
+  bucket      Bucket?  @relation(fields: [bucketId], references: [id])
+  createdAt   DateTime @default(now())
+}
