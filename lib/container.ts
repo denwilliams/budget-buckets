@@ -2,12 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import { BucketService } from './services/bucket-service';
 import { TransactionService } from './services/transaction-service';
 import { DashboardService } from './services/dashboard-service';
+import { StatementService } from './services/statement-service';
 
 export interface Container {
   prisma: PrismaClient;
   bucketService: BucketService;
   transactionService: TransactionService;
   dashboardService: DashboardService;
+  statementService: StatementService;
 }
 
 class DIContainer {
@@ -15,6 +17,7 @@ class DIContainer {
   private _bucketService: BucketService | null = null;
   private _transactionService: TransactionService | null = null;
   private _dashboardService: DashboardService | null = null;
+  private _statementService: StatementService | null = null;
 
   get prisma(): PrismaClient {
     if (!this._prisma) {
@@ -44,6 +47,13 @@ class DIContainer {
     return this._dashboardService;
   }
 
+  get statementService(): StatementService {
+    if (!this._statementService) {
+      this._statementService = new StatementService(this.prisma);
+    }
+    return this._statementService;
+  }
+
   async dispose(): Promise<void> {
     if (this._prisma) {
       await this._prisma.$disconnect();
@@ -52,6 +62,7 @@ class DIContainer {
     this._bucketService = null;
     this._transactionService = null;
     this._dashboardService = null;
+    this._statementService = null;
   }
 }
 
@@ -62,6 +73,7 @@ export function createContainer(): Container {
     bucketService: container.bucketService,
     transactionService: container.transactionService,
     dashboardService: container.dashboardService,
+    statementService: container.statementService,
   };
 }
 
