@@ -185,4 +185,4 @@ The project includes a `vercel.json` with optimized settings for Next.js and Pri
 
 ## License
 
-ISC
+MIT
