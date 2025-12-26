@@ -124,6 +124,65 @@ npm run start         # Start production server
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed information about the codebase structure, patterns, and best practices.
 
+## Deployment
+
+### Deploy to Vercel with Neon Postgres
+
+This application is optimized for deployment on Vercel with Neon serverless Postgres.
+
+#### Prerequisites
+
+1. A [Vercel](https://vercel.com) account
+2. A [Neon](https://neon.tech) account
+
+#### Step-by-Step Deployment
+
+1. **Create a Neon Database**
+   - Go to [Neon Console](https://console.neon.tech/)
+   - Create a new project
+   - Note your connection strings (you'll need both):
+     - **Pooled connection** (ends with `-pooler.region.neon.tech`) - for application runtime
+     - **Direct connection** (ends with `.region.neon.tech`) - for migrations
+
+2. **Deploy to Vercel**
+   - Push your code to GitHub
+   - Import your repository in Vercel
+   - Configure environment variables in Vercel dashboard:
+     ```
+     DATABASE_URL=postgres://username:password@ep-xxxxx-pooler.us-east-1.neon.tech/dbname?sslmode=require
+     DIRECT_URL=postgres://username:password@ep-xxxxx.us-east-1.neon.tech/dbname?sslmode=require
+     NODE_ENV=production
+     NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
+     ```
+
+3. **Run Database Migrations**
+   - Locally, set your `DIRECT_URL` in `.env`:
+     ```bash
+     DIRECT_URL=postgres://username:password@ep-xxxxx.us-east-1.neon.tech/dbname?sslmode=require
+     ```
+   - Run migrations:
+     ```bash
+     npx prisma migrate deploy
+     ```
+
+4. **Deploy**
+   - Vercel will automatically deploy your application
+   - The build process will run `prisma generate` automatically
+
+#### Important Notes
+
+- **Connection Pooling**: The app uses Prisma's singleton pattern to prevent connection exhaustion in serverless environments
+- **Pooled vs Direct URLs**: Always use the pooled connection (`-pooler`) for `DATABASE_URL` in production
+- **SSL Mode**: Neon requires `?sslmode=require` in the connection string
+- **Regions**: Consider deploying to the same region as your Neon database for lower latency
+
+#### Vercel Configuration
+
+The project includes a `vercel.json` with optimized settings for Next.js and Prisma:
+- Automatic Prisma client generation during build
+- Region configuration
+- Environment variable handling
+
 ## License
 
 ISC
