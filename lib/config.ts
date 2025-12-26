@@ -10,9 +10,18 @@ const envSchema = z.object({
     .string()
     .min(1, 'DATABASE_URL is required')
     .refine(
-      (url) => url.startsWith('postgresql://'),
-      'DATABASE_URL must be a valid PostgreSQL connection string'
+      (url) => url.startsWith('postgresql://') || url.startsWith('postgres://'),
+      'DATABASE_URL must be a valid PostgreSQL connection string (postgresql:// or postgres://)'
     ),
+
+  // Direct database URL for migrations (optional, only needed for Prisma migrations)
+  DIRECT_URL: z
+    .string()
+    .refine(
+      (url) => !url || url.startsWith('postgresql://') || url.startsWith('postgres://'),
+      'DIRECT_URL must be a valid PostgreSQL connection string if provided'
+    )
+    .optional(),
 
   // Node environment
   NODE_ENV: z
