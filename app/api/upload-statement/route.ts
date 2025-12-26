@@ -1,70 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withContainer } from '@/lib/with-container';
-import Papa from 'papaparse';
+import { Container } from '@/lib/container';
+import { handleError } from '@/lib/error-handler';
+import { ValidationError } from '@/lib/errors';
 
-async function postHandler(request: NextRequest, { prisma }: { prisma: any }) {
+async function postHandler(
+  request: NextRequest,
+  { statementService }: Container
+): Promise<NextResponse> {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
+      throw new ValidationError('No file provided');
+    }
+
+    const result = await statementService.uploadStatement(file);
+
+    if (!result.success && result.errors) {
       return NextResponse.json(
-        { error: 'No file provided' },
+        { error: 'Failed to parse statement', details: result.errors },
         { status: 400 }
       );
     }
 
-    const text = await file.text();
-
-    const result = Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    const transactions = [];
-    for (const row of result.data as any[]) {
-      const date = row.Date || row.date || row.DATE;
-      const description =
-        row.Description || row.description || row.DESCRIPTION || '';
-      const amount =
-        row.Amount || row.amount || row.AMOUNT || row.Debit || row.debit;
-
-      if (!date || !amount) {
-        continue;
-      }
-
-      const parsedDate = new Date(date);
-      if (isNaN(parsedDate.getTime())) {
-        continue;
-      }
-
-      const parsedAmount = parseFloat(amount.toString().replace(/[^0-9.-]/g, ''));
-      if (isNaN(parsedAmount)) {
-        continue;
-      }
-
-      const transaction = await prisma.transaction.create({
-        data: {
-          date: parsedDate,
-          description,
-          amount: Math.abs(parsedAmount),
-        },
-      });
-
-      transactions.push(transaction);
-    }
-
-    return NextResponse.json({
-      success: true,
-      count: transactions.length,
-      transactions,
-    });
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload statement' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 

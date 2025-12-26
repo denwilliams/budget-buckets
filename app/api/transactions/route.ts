@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withContainer } from '@/lib/with-container';
+import { Container } from '@/lib/container';
+import { handleError } from '@/lib/error-handler';
 
-async function getHandler(request: NextRequest, { prisma }: { prisma: any }) {
+async function getHandler(
+  request: NextRequest,
+  { transactionService }: Container
+): Promise<NextResponse> {
   try {
-    const transactions = await prisma.transaction.findMany({
-      include: {
-        bucket: true,
-      },
-      orderBy: {
-        date: 'desc',
-      },
-    });
+    const transactions = await transactionService.getAllTransactions();
     return NextResponse.json(transactions);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch transactions' },
-      { status: 500 }
-    );
+    return handleError(error);
   }
 }
 
