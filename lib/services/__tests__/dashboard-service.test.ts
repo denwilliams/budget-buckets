@@ -77,7 +77,7 @@ describe('DashboardService', () => {
               id: 't1',
               date: new Date(),
               description: 'Test',
-              amount: 900, // 90% spent
+              amount: 1000, // 100% spent - always critical unless last day of month
               bucketId: '1',
               createdAt: new Date(),
             },
@@ -93,7 +93,8 @@ describe('DashboardService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].status).toBe('critical');
-      expect(result[0].totalSpent).toBe(900);
+      expect(result[0].totalSpent).toBe(1000);
+      expect(result[0].percentageFull).toBe(100);
     });
 
     it('should only include transactions from current period', async () => {
